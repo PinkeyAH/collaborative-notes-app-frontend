@@ -1,32 +1,37 @@
-stages:
-  - build
-  - deploy
+name: CI/CD Pipeline
 
-# Build job 
-build_frontend:
-  stage: build
-  # extends: .validate // This is how you can use the validate job
-  image: node:16  # alpine is a lightweight image
-  script:
-    - cd Frontend
-    - npm install
-    - npm run build
-  artifacts:
-    paths:
-      -  Frontend/.next
-      # next js libary installed in deply job 
+on:
+  push:
+    branches:
+      - main
+      - feature/*
+  pull_request:
+    branches:
+      - main
 
+jobs:
+  build:
+    runs-on: self-hosted
 
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-# Test Stage node jov
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 16
 
+    - name: Install dependencies
+      run: npm install
 
-.test: # hiden job
-  stage: test
-  image: node:16
-  script:
-    - npm install
-    - npm test
+    - name: Run main
+      run: npm main
+
+    - name: Build Docker image
+      run: |
+        docker build -t registry.heroku.com/collaborative-notes-app-frontend/web .
+
 
 # Deploy to Vercel
 deploy-vercel:
@@ -37,4 +42,5 @@ deploy-vercel:
     - npm install -g vercel
     - vercel --token $VERCEL_TOKEN --prod
   only:
-    - main  # Deploy only on the main branch
+    - collaborative-notes-app-frontend  # Deploy only on the main branch
+ 
