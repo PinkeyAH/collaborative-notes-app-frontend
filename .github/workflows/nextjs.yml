@@ -30,17 +30,24 @@ jobs:
 
     - name: Build Docker image
       run: |
-        docker build -t registry.heroku.com/collaborative-notes-app-frontend/web .
+        docker build -t registry.vercel.com/collaborative-notes-app-frontend/web .
 
+  deploy-vercel:
+    runs-on: ubuntu-latest
 
-# Deploy to Vercel
-deploy-vercel:
-  stage: deploy
-  image: node:16
-  script:
-    # - cd Frontend
-    - npm install -g vercel
-    - vercel --token $VERCEL_TOKEN --prod
-  only:
-    - collaborative-notes-app-frontend  # Deploy only on the main branch
- 
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 16
+
+    - name: Install Vercel CLI
+      run: npm install -g vercel
+
+    - name: Deploy to Vercel
+      run: vercel --token $VERCEL_TOKEN --prod
+      env:
+        VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
